@@ -1,0 +1,129 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+}
+
+main {
+  width: min(1500px, calc(100% - 32px));
+  margin: 40px auto;
+}
+
+h1 {
+  text-align: center;
+}
+
+.debug-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(360px, 1.4fr) minmax(260px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.chat-panel,
+.log-panel {
+  min-width: 0;
+}
+
+.messages,
+.log-panel {
+  min-height: 400px;
+  padding: 16px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+}
+
+.messages p {
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+}
+
+.log-panel {
+  height: 460px;
+}
+
+h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+}
+
+article {
+  margin-bottom: 16px;
+}
+
+h3 {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 6px 6px 0 0;
+  color: white;
+  background: #444;
+  font-size: 13px;
+}
+
+pre {
+  max-height: 300px;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  border-radius: 0 0 6px 6px;
+  color: #d7f7d7;
+  background: #1d1d1d;
+  font: 12px/1.5 Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  color: #777;
+}
+
+.user {
+  color: #1f57a4;
+}
+
+form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+}
+
+button {
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 6px;
+  color: white;
+  background: #222;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+@media (max-width: 900px) {
+  .debug-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-panel {
+    grid-row: 1;
+  }
+
+  .log-panel {
+    height: auto;
+    max-height: 460px;
+  }
+}
