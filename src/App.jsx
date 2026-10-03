@@ -25,20 +25,48 @@ function estimateTokens(text) {
   return Math.ceil(str.length / 4)
 }
 
+// Texto del prompt enviado, sea un string o un array de mensajes (modo contexto).
+function requestText(request) {
+  const args = request?.data?.arguments
+  if (!args) return ''
+  if (typeof args.prompt === 'string') return args.prompt
+  if (Array.isArray(args.messages)) {
+    return args.messages.map((m) => String(m?.content ?? '')).join('\n')
+  }
+  return ''
+}
+
 export default function App() {
   const [messages, setMessages] = useState([])
   const [requests, setRequests] = useState([])
   const [responses, setResponses] = useState([])
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+  const [useContext, setUseContext] = useState(() => {
+    try {
+      return localStorage.getItem('cb_useContext') === '1'
+    } catch {
+      return false
+    }
+  })
 
   const lastRequest = requests.length > 0 ? requests[requests.length - 1] : null
   const lastResponse = responses.length > 0 ? responses[responses.length - 1] : null
-  const lastPrompt = lastRequest?.data?.arguments?.prompt ?? ''
+  const lastPromptText = requestText(lastRequest)
   const lastAnswer =
     lastResponse && !lastResponse.data.error
       ? String(lastResponse.data.message?.content ?? '')
       : null
+
+  function toggleContext(event) {
+    const checked = event.target.checked
+    setUseContext(checked)
+    try {
+      localStorage.setItem('cb_useContext', checked ? '1' : '0')
+    } catch {
+      /* sin almacenamiento disponible */
+    }
+  }
 
   async function sendMessage(event) {
     event.preventDefault()
@@ -46,20 +74,22 @@ export default function App() {
 
     const question = text.trim()
     const id = Date.now()
+    const userMessage = { role: 'user', content: question }
+    // Con contexto activado se envían los últimos 10 mensajes (pregunta incluida);
+    // si no, solo la pregunta actual.
+    const promptToSend = useContext ? [...messages, userMessage].slice(-10) : question
     const requestData = {
       method: 'puter.ai.chat',
-      arguments: {
-        prompt: question,
-      },
+      arguments: useContext ? { messages: promptToSend } : { prompt: question },
     }
 
     setText('')
-    setMessages((current) => [...current, { role: 'user', content: question }])
+    setMessages((current) => [...current, userMessage])
     setRequests((current) => [...current, { id, data: requestData }])
     setLoading(true)
 
     try {
-      const response = await window.puter.ai.chat(question)
+      const response = await window.puter.ai.chat(promptToSend)
       const answer = response.message.content.toString()
       setResponses((current) => [...current, { id, data: response }])
       setMessages((current) => [...current, { role: 'assistant', content: answer }])
@@ -86,7 +116,16 @@ export default function App() {
 
   return (
     <main>
-      <h1>Chatbot</h1>
+      <header className="app-header">
+        <h1>Chatbot</h1>
+        <label
+          className="context-toggle"
+          title="Si está activado, en cada petición se envían los últimos 10 mensajes como contexto"
+        >
+          <input type="checkbox" checked={useContext} onChange={toggleContext} />
+          Contexto (10)
+        </label>
+      </header>
 
       <div className="debug-layout">
         <section className="log-panel">
@@ -104,7 +143,7 @@ export default function App() {
             <h3>Contexto de entrada</h3>
             {lastRequest ? (
               <p className="token-count" title="Estimación: ~4 caracteres por token">
-                ~{estimateTokens(lastPrompt)} <span>tokens</span>
+                ~{estimateTokens(lastPromptText)} <span>tokens</span>
               </p>
             ) : (
               <p className="empty">Todavía no hay contexto de entrada.</p>
@@ -125,6 +164,7 @@ export default function App() {
 
           <form onSubmit={sendMessage}>
             <input
+              type="text"
               value={text}
               onChange={(event) => setText(event.target.value)}
               placeholder="Escribe un mensaje"

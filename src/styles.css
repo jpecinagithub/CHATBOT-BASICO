@@ -17,6 +17,36 @@ h1 {
   text-align: center;
 }
 
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.app-header h1 {
+  margin: 0;
+}
+
+.context-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.context-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #222;
+  cursor: pointer;
+}
+
 .debug-layout {
   display: grid;
   grid-template-columns: minmax(260px, 1fr) minmax(360px, 1.4fr) minmax(260px, 1fr);
@@ -125,7 +155,7 @@ form {
   margin-top: 12px;
 }
 
-input {
+input[type="text"] {
   flex: 1;
   padding: 12px;
   border: 1px solid #aaa;
