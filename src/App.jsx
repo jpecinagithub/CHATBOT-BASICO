@@ -24,6 +24,9 @@ export default function App() {
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const lastRequest = requests.length > 0 ? requests[requests.length - 1] : null
+  const lastResponse = responses.length > 0 ? responses[responses.length - 1] : null
+
   async function sendMessage(event) {
     event.preventDefault()
     if (!text.trim() || loading) return
@@ -75,13 +78,23 @@ export default function App() {
       <div className="debug-layout">
         <section className="log-panel">
           <h2>Petición enviada</h2>
-          {requests.length === 0 && <p className="empty">Todavía no hay peticiones.</p>}
-          {requests.map((request, index) => (
-            <article key={request.id}>
-              <h3>Petición #{index + 1}</h3>
-              <pre>{formatJson(request.data)}</pre>
-            </article>
-          ))}
+          <div className="log-list">
+            {requests.length === 0 && <p className="empty">Todavía no hay peticiones.</p>}
+            {requests.map((request, index) => (
+              <article key={request.id}>
+                <h3>Petición #{index + 1}</h3>
+                <pre>{formatJson(request.data)}</pre>
+              </article>
+            ))}
+          </div>
+          <footer className="context-box">
+            <h3>Contexto de entrada</h3>
+            {lastRequest ? (
+              <pre>{formatJson(lastRequest.data)}</pre>
+            ) : (
+              <p className="empty">Todavía no hay contexto de entrada.</p>
+            )}
+          </footer>
         </section>
 
         <section className="chat-panel">
@@ -108,13 +121,23 @@ export default function App() {
 
         <section className="log-panel">
           <h2>Respuesta recibida</h2>
-          {responses.length === 0 && <p className="empty">Todavía no hay respuestas.</p>}
-          {responses.map((response, index) => (
-            <article key={response.id}>
-              <h3>Respuesta #{index + 1}</h3>
-              <pre>{formatJson(response.data)}</pre>
-            </article>
-          ))}
+          <div className="log-list">
+            {responses.length === 0 && <p className="empty">Todavía no hay respuestas.</p>}
+            {responses.map((response, index) => (
+              <article key={response.id}>
+                <h3>Respuesta #{index + 1}</h3>
+                <pre>{formatJson(response.data)}</pre>
+              </article>
+            ))}
+          </div>
+          <footer className="context-box">
+            <h3>Contexto de salida</h3>
+            {lastResponse ? (
+              <pre>{formatJson(lastResponse.data)}</pre>
+            ) : (
+              <p className="empty">Todavía no hay contexto de salida.</p>
+            )}
+          </footer>
         </section>
       </div>
     </main>
