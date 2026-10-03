@@ -49,6 +49,13 @@ export default function App() {
       return false
     }
   })
+  const [useSkill, setUseSkill] = useState(() => {
+    try {
+      return localStorage.getItem('cb_useSkill') === '1'
+    } catch {
+      return false
+    }
+  })
 
   const lastRequest = requests.length > 0 ? requests[requests.length - 1] : null
   const lastResponse = responses.length > 0 ? responses[responses.length - 1] : null
@@ -63,6 +70,16 @@ export default function App() {
     setUseContext(checked)
     try {
       localStorage.setItem('cb_useContext', checked ? '1' : '0')
+    } catch {
+      /* sin almacenamiento disponible */
+    }
+  }
+
+  function toggleSkill(event) {
+    const checked = event.target.checked
+    setUseSkill(checked)
+    try {
+      localStorage.setItem('cb_useSkill', checked ? '1' : '0')
     } catch {
       /* sin almacenamiento disponible */
     }
@@ -119,11 +136,18 @@ export default function App() {
       <header className="app-header">
         <h1>Chatbot</h1>
         <label
-          className="context-toggle"
+          className="header-toggle"
           title="Si está activado, en cada petición se envían los últimos 10 mensajes como contexto"
         >
           <input type="checkbox" checked={useContext} onChange={toggleContext} />
           Contexto (10)
+        </label>
+        <label
+          className="header-toggle"
+          title="Si está activado, las respuestas del bot se muestran en rojo"
+        >
+          <input type="checkbox" checked={useSkill} onChange={toggleSkill} />
+          Skill
         </label>
       </header>
 
@@ -153,12 +177,16 @@ export default function App() {
 
         <section className="chat-panel">
           <div className="messages">
-            {messages.map((message, index) => (
-              <p key={index} className={message.role}>
-                <strong>{message.role === 'user' ? 'Tú' : 'Bot'}:</strong>{' '}
-                {message.content}
-              </p>
-            ))}
+            {messages.map((message, index) => {
+              const cls =
+                message.role === 'assistant' && useSkill ? 'assistant skill-on' : message.role
+              return (
+                <p key={index} className={cls}>
+                  <strong>{message.role === 'user' ? 'Tú' : 'Bot'}:</strong>{' '}
+                  {message.content}
+                </p>
+              )
+            })}
             {loading && <p>El bot está escribiendo...</p>}
           </div>
 
