@@ -17,6 +17,14 @@ function formatJson(value) {
   )
 }
 
+// Estimación de tokens (~4 caracteres por token). Es una aproximación:
+// el tokenizador exacto depende del modelo que use Puter por defecto.
+function estimateTokens(text) {
+  const str = String(text ?? '')
+  if (!str) return 0
+  return Math.ceil(str.length / 4)
+}
+
 export default function App() {
   const [messages, setMessages] = useState([])
   const [requests, setRequests] = useState([])
@@ -26,6 +34,11 @@ export default function App() {
 
   const lastRequest = requests.length > 0 ? requests[requests.length - 1] : null
   const lastResponse = responses.length > 0 ? responses[responses.length - 1] : null
+  const lastPrompt = lastRequest?.data?.arguments?.prompt ?? ''
+  const lastAnswer =
+    lastResponse && !lastResponse.data.error
+      ? String(lastResponse.data.message?.content ?? '')
+      : null
 
   async function sendMessage(event) {
     event.preventDefault()
@@ -90,7 +103,9 @@ export default function App() {
           <footer className="context-box">
             <h3>Contexto de entrada</h3>
             {lastRequest ? (
-              <pre>{formatJson(lastRequest.data)}</pre>
+              <p className="token-count" title="Estimación: ~4 caracteres por token">
+                ~{estimateTokens(lastPrompt)} <span>tokens</span>
+              </p>
             ) : (
               <p className="empty">Todavía no hay contexto de entrada.</p>
             )}
@@ -132,10 +147,14 @@ export default function App() {
           </div>
           <footer className="context-box">
             <h3>Contexto de salida</h3>
-            {lastResponse ? (
-              <pre>{formatJson(lastResponse.data)}</pre>
+            {lastAnswer !== null ? (
+              <p className="token-count" title="Estimación: ~4 caracteres por token">
+                ~{estimateTokens(lastAnswer)} <span>tokens</span>
+              </p>
             ) : (
-              <p className="empty">Todavía no hay contexto de salida.</p>
+              <p className="empty">
+                {lastResponse ? 'La última respuesta fue un error.' : 'Todavía no hay contexto de salida.'}
+              </p>
             )}
           </footer>
         </section>
