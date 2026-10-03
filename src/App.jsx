@@ -56,6 +56,13 @@ export default function App() {
       return false
     }
   })
+  const [useCaveman, setUseCaveman] = useState(() => {
+    try {
+      return localStorage.getItem('cb_useCaveman') === '1'
+    } catch {
+      return false
+    }
+  })
 
   const lastRequest = requests.length > 0 ? requests[requests.length - 1] : null
   const lastResponse = responses.length > 0 ? responses[responses.length - 1] : null
@@ -85,6 +92,16 @@ export default function App() {
     }
   }
 
+  function toggleCaveman(event) {
+    const checked = event.target.checked
+    setUseCaveman(checked)
+    try {
+      localStorage.setItem('cb_useCaveman', checked ? '1' : '0')
+    } catch {
+      /* sin almacenamiento disponible */
+    }
+  }
+
   async function sendMessage(event) {
     event.preventDefault()
     if (!text.trim() || loading) return
@@ -92,12 +109,30 @@ export default function App() {
     const question = text.trim()
     const id = Date.now()
     const userMessage = { role: 'user', content: question }
+    // Skills que modifican lo enviado al modelo.
+    const skillMessages = []
+    if (useCaveman) {
+      skillMessages.push({
+        role: 'system',
+        content:
+          'Responde únicamente con monosílabos en español: todas las palabras de tu respuesta deben tener una sola sílaba.',
+      })
+    }
     // Con contexto activado se envían los últimos 10 mensajes (pregunta incluida);
-    // si no, solo la pregunta actual.
-    const promptToSend = useContext ? [...messages, userMessage].slice(-10) : question
+    // si no, solo la pregunta actual (más las skills activas).
+    let promptToSend
+    let args
+    if (useContext || skillMessages.length > 0) {
+      const history = useContext ? [...messages, userMessage].slice(-10) : [userMessage]
+      promptToSend = [...skillMessages, ...history]
+      args = { messages: promptToSend }
+    } else {
+      promptToSend = question
+      args = { prompt: question }
+    }
     const requestData = {
       method: 'puter.ai.chat',
-      arguments: useContext ? { messages: promptToSend } : { prompt: question },
+      arguments: args,
     }
 
     setText('')
@@ -147,7 +182,14 @@ export default function App() {
           title="Si está activado, las respuestas del bot se muestran en rojo"
         >
           <input type="checkbox" checked={useSkill} onChange={toggleSkill} />
-          Skill
+          skill rojo
+        </label>
+        <label
+          className="header-toggle"
+          title="Si está activado, el modelo responde solo con monosílabos"
+        >
+          <input type="checkbox" checked={useCaveman} onChange={toggleCaveman} />
+          skill cavernicola
         </label>
       </header>
 
