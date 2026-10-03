@@ -189,7 +189,7 @@ export default function App() {
           title="Si está activado, el modelo responde solo con monosílabos"
         >
           <input type="checkbox" checked={useCaveman} onChange={toggleCaveman} />
-          skill cavernicola
+          skill cavernícola
         </label>
       </header>
 
